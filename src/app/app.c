@@ -12,15 +12,18 @@
 #define OnInputWindow 2
 #define MAX_ELEMENTS 1024
 
-HWND mainWindow, button, textZone, input, errorWindow, timerWindow, speedWindow;
+HWND mainWindow, startButton, textZone, input, errorWindow, timerWindow, speedWindow;
 HDC hDc;
 int mistakes = 0;
-BOOL wrong = FALSE;
+BOOL errorZone = FALSE;
 
 UINT_PTR timer_idt;
-int min, sec;
+int min = 0, sec = 0;
+int numberSigns = 0;
+int step = 1;
 
 char bigString[] = "Some text. Write it here, please. I need you to understand it.";
+// char bigString[] = "Exercitation esse occaecat nostrud sit sint amet. Labore ea esse laborum cupidatat. Commodo Lorem cillum minim dolore. Ex reprehenderit aute tempor commodo laborum exercitation dolore ullamco cillum consequat magna id fugiat officia.";
 
 char * createErrorString()
 {
@@ -73,7 +76,24 @@ char * createTimerString()
     return string;
 }
 
-BOOL stringHandler(char *original, char *string)
+char * createSpeedString(int speed)
+{
+    static char string[255];
+    char word[] = " ch/min";
+    char value[255];
+    itoa(speed, value, 10);
+    int j = 0;
+
+    for (int i = 0; i < strlen(value); i++, j++)
+        string[j] = value[i];
+    
+    for (int i = 0; i < strlen(word); i++, j++)
+        string[j] = word[i];
+    string[j] = '\0';
+    return string;
+}
+
+BOOL checkString(char *original, char *string)
 {
     for (int i = 0; i < strlen(string); i++)
     {
@@ -99,7 +119,16 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 sec++;
             }
             SendMessage(timerWindow, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
-            // KillTimer(hwnd, timer_idt);
+            float time = (((float) min * 60) + (float) sec) / 60;
+            int signs = numberSigns / 3;
+            int currentSpeed = signs / ((float) step / 60);
+            SendMessage(speedWindow, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
+            step++;
+            if (step == 5)
+            {
+                numberSigns = 0;
+                step = 1;
+            }
             break;
         }
         case WM_DESTROY:
@@ -130,7 +159,8 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CTLCOLOREDIT:
         {
             if ((HWND)lParam == GetDlgItem(hwnd, OnInputWindow))
-            {		
+            {
+                numberSigns++;
                 int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
                 char string[MAX_ELEMENTS];
                 GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
@@ -138,15 +168,19 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if (value == EN_UPDATE) // EN_CHANGE (may be use)
                     printf("string: %s\n", string);
                 
-                if (!wrong)
+                if (!errorZone)
                 {
-                    if (!stringHandler(bigString, string))
+                    if (!strcmp(bigString, string))
+                    {
+                        KillTimer(hwnd, timer_idt);
+                    }
+                    else if (!checkString(bigString, string))
                     {
                         mistakes++;
                         SendMessage(errorWindow, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
                         SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
                         SetTextColor((HDC)wParam, RGB(255, 0, 0));
-                        wrong = TRUE;
+                        errorZone = TRUE;
                         return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
                     }
                     else
@@ -158,11 +192,11 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    if (stringHandler(bigString, string))
+                    if (checkString(bigString, string))
                     {
                         SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
                         SetTextColor((HDC)wParam, RGB(0, 0, 0));
-                        wrong = FALSE;
+                        errorZone = FALSE;
                         return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
                     }
                     else
@@ -186,13 +220,17 @@ void CreateAllWidgets(HWND hwnd)
     LOGFONT logfont; 
     ZeroMemory(&logfont, sizeof(LOGFONT));
     logfont.lfCharSet = DEFAULT_CHARSET;
-    logfont.lfHeight = -20; 
+    logfont.lfHeight = -30;
     HFONT hFont = CreateFontIndirect(&logfont);
 
-    button = CreateWindow("button", "START THE GAME", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 150, 400, 500, 100, hwnd, (HMENU)OnClickedButton, NULL, NULL);
+    startButton = CreateWindow("button", "START THE GAME", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 150, 400, 500, 100, hwnd, (HMENU)OnClickedButton, NULL, NULL);
+    SendMessage(startButton, WM_SETFONT, (WPARAM)hFont, TRUE);
 
     // HBITMAP hImage = LoadImage(NULL, "background.bmp", IMAGE_BITMAP, 800, 600, LR_LOADFROMFILE);
     // SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImage);
+
+    logfont.lfHeight = -20;
+    hFont = CreateFontIndirect(&logfont);
 
     textZone = CreateWindow("static", bigString, WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 25, (WIDTH - 65), 200, hwnd, NULL, NULL, NULL);
     SendMessage(textZone, WM_SETFONT, (WPARAM)hFont, TRUE);
@@ -203,7 +241,7 @@ void CreateAllWidgets(HWND hwnd)
     timerWindow = CreateWindow("static", createTimerString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 300, 225, 185, 75, hwnd, NULL, NULL, NULL);
     SendMessage(timerWindow, WM_SETFONT, (WPARAM)hFont, TRUE);
 
-    speedWindow = CreateWindow("static", createTimerString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 575, 225, 185, 75, hwnd, NULL, NULL, NULL);
+    speedWindow = CreateWindow("static", createSpeedString(0), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 575, 225, 185, 75, hwnd, NULL, NULL, NULL);
     SendMessage(speedWindow, WM_SETFONT, (WPARAM)hFont, TRUE);
 
     input = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 300, (WIDTH - 65), 200, hwnd, (HMENU)OnInputWindow, NULL, NULL);
