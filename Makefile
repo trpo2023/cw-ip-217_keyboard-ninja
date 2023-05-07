@@ -5,3 +5,8 @@ bin/app.exe:
 
 run:
 	bin/app.exe
+
+format: 
+	clang-format -i --verbose src/app/app.c src/libapp/randtext.c
+
+.PHONY: bin/app.exe

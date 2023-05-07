@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <locale.h>
 #include <string.h>
-#include <conio.h>
 #include <windows.h>
 #include <locale.h>
-#include <time.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -12,7 +10,7 @@
 #define OnInputWindow 2
 #define MAX_ELEMENTS 1024
 
-HWND mainWindow, startButton, textZone, input, errorWindow, timerWindow, speedWindow;
+HWND mainWindow, startButton, textZone, input, errorWindow, timerWindow, speedWindow, resultWindow;
 HDC hDc;
 int mistakes = 0;
 BOOL errorZone = FALSE;
@@ -22,8 +20,8 @@ int min = 0, sec = 0;
 int numberSigns = 0;
 int step = 1;
 
-char bigString[] = "Some text. Write it here, please. I need you to understand it.";
-// char bigString[] = "Exercitation esse occaecat nostrud sit sint amet. Labore ea esse laborum cupidatat. Commodo Lorem cillum minim dolore. Ex reprehenderit aute tempor commodo laborum exercitation dolore ullamco cillum consequat magna id fugiat officia.";
+// char bigString[] = "Some text. Write it here, please. I need you to understand it.";
+char bigString[] = "SI often take books from the school library. The library is helpful when I have to make a report or when I need information on some subjects. The choice of books in our school library is very good. There are many short stories and novels, textbooks and reference books, dictionaries and encyclopedias there.";
 
 char * createErrorString()
 {
@@ -93,6 +91,23 @@ char * createSpeedString(int speed)
     return string;
 }
 
+char * createResultString(char *text)
+{
+    static char resultString[] = "RESULTS\r\nTime: ";
+    int j = strlen(resultString);
+
+    char *timerString = createTimerString();
+    for (int i = 0; i < strlen(timerString); i++, j++)
+    {
+        resultString[j] = timerString[i];
+    }
+    resultString[j] = '\n';
+    j++;
+
+    resultString[j] = '\0';
+    return resultString;
+}
+
 BOOL checkString(char *original, char *string)
 {
     for (int i = 0; i < strlen(string); i++)
@@ -101,6 +116,25 @@ BOOL checkString(char *original, char *string)
             return FALSE;
     }
     return TRUE;
+}
+
+void hideAllGameWidgets(BOOL isStart)
+{
+    if (isStart)
+        ShowWindow(input, SW_HIDE);
+    ShowWindow(textZone, SW_HIDE);
+    ShowWindow(errorWindow, SW_HIDE);
+    ShowWindow(timerWindow, SW_HIDE);
+    ShowWindow(speedWindow, SW_HIDE);
+}
+
+void showAllGameWidgets()
+{
+    ShowWindow(input, SW_SHOWNORMAL);
+    ShowWindow(textZone, SW_SHOWNORMAL);
+    ShowWindow(errorWindow, SW_SHOWNORMAL);
+    ShowWindow(timerWindow, SW_SHOWNORMAL);
+    ShowWindow(speedWindow, SW_SHOWNORMAL);
 }
 
 LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -119,7 +153,6 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 sec++;
             }
             SendMessage(timerWindow, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
-            float time = (((float) min * 60) + (float) sec) / 60;
             int signs = numberSigns / 3;
             int currentSpeed = signs / ((float) step / 60);
             SendMessage(speedWindow, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
@@ -145,11 +178,8 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     printf("Button is here!\n");
                     DestroyWindow((HWND)lParam);
                     UpdateWindow(hwnd);
+                    showAllGameWidgets();
                     ShowWindow(input, SW_SHOWNORMAL);
-                    ShowWindow(textZone, SW_SHOWNORMAL);
-                    ShowWindow(errorWindow, SW_SHOWNORMAL);
-                    ShowWindow(timerWindow, SW_SHOWNORMAL);
-                    ShowWindow(speedWindow, SW_SHOWNORMAL);
                     min = 0, sec = 0;
                     SetTimer(hwnd, timer_idt, 1000, NULL);  // Ставим таймер на 1 секунду
                     break;
@@ -173,6 +203,11 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     if (!strcmp(bigString, string))
                     {
                         KillTimer(hwnd, timer_idt);
+                        hideAllGameWidgets(FALSE);
+                        ShowWindow(resultWindow, SW_SHOWNORMAL);
+                        SendMessage(resultWindow, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
+                        SendMessage(input, EM_SETREADONLY, TRUE, 0);
+                        break;
                     }
                     else if (!checkString(bigString, string))
                     {
@@ -246,14 +281,16 @@ void CreateAllWidgets(HWND hwnd)
 
     input = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 300, (WIDTH - 65), 200, hwnd, (HMENU)OnInputWindow, NULL, NULL);
     SendMessage(input, WM_SETFONT, (WPARAM)hFont, TRUE);
+
     // WS_VSCROLL - для скролла
+    hideAllGameWidgets(TRUE);
 
-    ShowWindow(input, SW_HIDE);
-    ShowWindow(textZone, SW_HIDE);
-    ShowWindow(errorWindow, SW_HIDE);
-    ShowWindow(timerWindow, SW_HIDE);
-    ShowWindow(speedWindow, SW_HIDE);
+    logfont.lfHeight = -25;
+    hFont = CreateFontIndirect(&logfont);
 
+    resultWindow = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 250, 150, 250, 150, hwnd, NULL, NULL, NULL);
+    SendMessage(speedWindow, WM_SETFONT, (WPARAM)hFont, TRUE);
+    ShowWindow(resultWindow, SW_HIDE);
 }
 
 int main(int argc, char *argv[])

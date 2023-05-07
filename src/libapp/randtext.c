@@ -1,9 +1,9 @@
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <assert.h>
+#include <time.h>
 
 int randf(void)
 {
@@ -19,10 +19,9 @@ void GetWords(char **words, int rand_num)
     {
         fgets(words[0], 500, file);
     }
-    
 }
 
-char * getString()
+char *getString()
 {
     int rand_num = randf();
     printf("%d ", rand_num);
