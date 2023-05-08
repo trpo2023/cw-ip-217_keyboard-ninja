@@ -1,8 +1,7 @@
-#include <stdio.h>
 #include <locale.h>
+#include <stdio.h>
 #include <string.h>
 #include <windows.h>
-#include <locale.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -23,7 +22,7 @@ int step = 1;
 // char bigString[] = "Some text. Write it here, please. I need you to understand it.";
 char bigString[] = "SI often take books from the school library. The library is helpful when I have to make a report or when I need information on some subjects. The choice of books in our school library is very good. There are many short stories and novels, textbooks and reference books, dictionaries and encyclopedias there.";
 
-char * createErrorString()
+char *createErrorString()
 {
     static char errorString[255];
     char word[] = "Mistakes: ";
@@ -41,7 +40,7 @@ char * createErrorString()
     return errorString;
 }
 
-char * createTimerString()
+char *createTimerString()
 {
     static char string[255];
     char minstr[255];
@@ -74,7 +73,7 @@ char * createTimerString()
     return string;
 }
 
-char * createSpeedString(int speed)
+char *createSpeedString(int speed)
 {
     static char string[255];
     char word[] = " ch/min";
@@ -84,14 +83,14 @@ char * createSpeedString(int speed)
 
     for (int i = 0; i < strlen(value); i++, j++)
         string[j] = value[i];
-    
+
     for (int i = 0; i < strlen(word); i++, j++)
         string[j] = word[i];
     string[j] = '\0';
     return string;
 }
 
-char * createResultString(char *text)
+char *createResultString(char *text)
 {
     static char resultString[] = "RESULTS\r\nTime: ";
     int j = strlen(resultString);
@@ -141,118 +140,118 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-        case WM_TIMER:
+    case WM_TIMER:
+    {
+        if (sec > 59)
         {
-            if (sec > 59)
-            {
-                sec = 0;
-                min++;
-            }
-            else
-            {
-                sec++;
-            }
-            SendMessage(timerWindow, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
-            int signs = numberSigns / 3;
-            int currentSpeed = signs / ((float) step / 60);
-            SendMessage(speedWindow, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
-            step++;
-            if (step == 5)
-            {
-                numberSigns = 0;
-                step = 1;
-            }
+            sec = 0;
+            min++;
+        }
+        else
+        {
+            sec++;
+        }
+        SendMessage(timerWindow, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
+        int signs = numberSigns / 3;
+        int currentSpeed = signs / ((float)step / 60);
+        SendMessage(speedWindow, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
+        step++;
+        if (step == 5)
+        {
+            numberSigns = 0;
+            step = 1;
+        }
+        break;
+    }
+    case WM_DESTROY:
+    {
+        PostQuitMessage(0);
+        break;
+    }
+    case WM_COMMAND:
+    {
+        switch (LOWORD(wParam))
+        {
+        case OnClickedButton:
+        {
+            printf("Button is here!\n");
+            DestroyWindow((HWND)lParam);
+            UpdateWindow(hwnd);
+            showAllGameWidgets();
+            ShowWindow(input, SW_SHOWNORMAL);
+            min = 0, sec = 0;
+            SetTimer(hwnd, timer_idt, 1000, NULL); // Ставим таймер на 1 секунду
             break;
         }
-        case WM_DESTROY:
-        {
-            PostQuitMessage(0);
-            break;
         }
-        case WM_COMMAND:
+    }
+    case WM_CTLCOLOREDIT:
+    {
+        if ((HWND)lParam == GetDlgItem(hwnd, OnInputWindow))
         {
-            switch (LOWORD(wParam))
-            {
-                case OnClickedButton:
-                {
-                    printf("Button is here!\n");
-                    DestroyWindow((HWND)lParam);
-                    UpdateWindow(hwnd);
-                    showAllGameWidgets();
-                    ShowWindow(input, SW_SHOWNORMAL);
-                    min = 0, sec = 0;
-                    SetTimer(hwnd, timer_idt, 1000, NULL);  // Ставим таймер на 1 секунду
-                    break;
-                }               
-            }
-        }
-        case WM_CTLCOLOREDIT:
-        {
-            if ((HWND)lParam == GetDlgItem(hwnd, OnInputWindow))
-            {
-                numberSigns++;
-                int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
-                char string[MAX_ELEMENTS];
-                GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
+            numberSigns++;
+            int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
+            char string[MAX_ELEMENTS];
+            GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
 
-                if (value == EN_UPDATE) // EN_CHANGE (may be use)
-                    printf("string: %s\n", string);
-                
-                if (!errorZone)
+            if (value == EN_UPDATE) // EN_CHANGE (may be use)
+                printf("string: %s\n", string);
+
+            if (!errorZone)
+            {
+                if (!strcmp(bigString, string))
                 {
-                    if (!strcmp(bigString, string))
-                    {
-                        KillTimer(hwnd, timer_idt);
-                        hideAllGameWidgets(FALSE);
-                        ShowWindow(resultWindow, SW_SHOWNORMAL);
-                        SendMessage(resultWindow, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
-                        SendMessage(input, EM_SETREADONLY, TRUE, 0);
-                        break;
-                    }
-                    else if (!checkString(bigString, string))
-                    {
-                        mistakes++;
-                        SendMessage(errorWindow, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
-                        SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                        SetTextColor((HDC)wParam, RGB(255, 0, 0));
-                        errorZone = TRUE;
-                        return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                    }
-                    else
-                    {
-                        SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                        SetTextColor((HDC)wParam, RGB(0, 0, 0));
-                        return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                    }
+                    KillTimer(hwnd, timer_idt);
+                    hideAllGameWidgets(FALSE);
+                    ShowWindow(resultWindow, SW_SHOWNORMAL);
+                    SendMessage(resultWindow, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
+                    SendMessage(input, EM_SETREADONLY, TRUE, 0);
+                    break;
+                }
+                else if (!checkString(bigString, string))
+                {
+                    mistakes++;
+                    SendMessage(errorWindow, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
+                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+                    SetTextColor((HDC)wParam, RGB(255, 0, 0));
+                    errorZone = TRUE;
+                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
                 }
                 else
                 {
-                    if (checkString(bigString, string))
-                    {
-                        SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                        SetTextColor((HDC)wParam, RGB(0, 0, 0));
-                        errorZone = FALSE;
-                        return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                    }
-                    else
-                    {
-                        SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                        SetTextColor((HDC)wParam, RGB(255, 0, 0));
-                        return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                    }
+                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+                    SetTextColor((HDC)wParam, RGB(0, 0, 0));
+                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
                 }
             }
-            break;
+            else
+            {
+                if (checkString(bigString, string))
+                {
+                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+                    SetTextColor((HDC)wParam, RGB(0, 0, 0));
+                    errorZone = FALSE;
+                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
+                }
+                else
+                {
+                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+                    SetTextColor((HDC)wParam, RGB(255, 0, 0));
+                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
+                }
+            }
         }
-        default:
-            return DefWindowProcA(hwnd, message, wParam, lParam);
+        break;
+    }
+    default:
+        return DefWindowProcA(hwnd, message, wParam, lParam);
     }
 }
 
 void CreateAllWidgets(HWND hwnd)
 {
     // Размер шрифта
-    LOGFONT logfont; 
+    LOGFONT logfont;
     ZeroMemory(&logfont, sizeof(LOGFONT));
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfHeight = -30;
