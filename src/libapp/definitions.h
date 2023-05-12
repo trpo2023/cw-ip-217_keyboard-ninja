@@ -12,7 +12,7 @@
 HINSTANCE hInst;
 HDC hDc;
 HICON icon;
-UINT_PTR timer_idt;
+UINT_PTR timerIdt;
 
 extern int mistakes, min, sec;
 extern int numberSigns, step;

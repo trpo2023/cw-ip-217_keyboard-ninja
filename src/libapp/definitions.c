@@ -18,41 +18,34 @@ char *createErrorString()
 
     for (int i = 0; i < strlen(value); i++, j++)
         errorString[j] = value[i];
-
     errorString[j] = '\0';
+
     return errorString;
 }
 
 char *createTimerString()
 {
     static char string[STANDARD_SIZE];
-    char minstr[STANDARD_SIZE];
-    char secstr[STANDARD_SIZE];
-    itoa(min, minstr, 10);
-    itoa(sec, secstr, 10);
+    char minStr[STANDARD_SIZE];
+    char secStr[STANDARD_SIZE];
+    itoa(min, minStr, 10);
+    itoa(sec, secStr, 10);
     int j = 0;
 
     if (min < 10)
-    {
-        string[j] = '0';
-        j++;
-    }
+        string[j++] = '0';
 
-    for (int i = 0; i < strlen(minstr); i++, j++)
-        string[j] = minstr[i];
+    for (int i = 0; i < strlen(minStr); i++, j++)
+        string[j] = minStr[i];
+    string[j++] = ':';
 
-    string[j] = ':';
-    j++;
     if (sec < 10)
-    {
-        string[j] = '0';
-        j++;
-    }
+        string[j++] = '0';
 
-    for (int i = 0; i < strlen(secstr); i++, j++)
-        string[j] = secstr[i];
-
+    for (int i = 0; i < strlen(secStr); i++, j++)
+        string[j] = secStr[i];
     string[j] = '\0';
+
     return string;
 }
 
@@ -70,6 +63,7 @@ char *createSpeedString(int speed)
     for (int i = 0; i < strlen(word); i++, j++)
         string[j] = word[i];
     string[j] = '\0';
+
     return string;
 }
 
@@ -98,6 +92,13 @@ BOOL checkString(char *original, char *string)
             return FALSE;
     }
     return TRUE;
+}
+
+LRESULT changeColor(HDC wParam, int red, int green, int blue)
+{
+    SetBkColor(wParam, GetSysColor(COLOR_WINDOW));
+    SetTextColor(wParam, RGB(red, green, blue));
+    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
 }
 
 LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -142,9 +143,8 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             hideMainWidgets();
             UpdateWindow(hwnd);
             showAllGameWidgets();
-            ShowWindow(gameWindow.inputZone, SW_SHOWNORMAL);
             min = 0, sec = 0;
-            SetTimer(hwnd, timer_idt, 1000, NULL); // Ставим таймер на 1 секунду
+            SetTimer(hwnd, timerIdt, 1000, NULL); // Ставим таймер на 1 секунду
             break;
         }
         }
@@ -161,48 +161,29 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             if (value == EN_UPDATE) // EN_CHANGE (may be use)
                 printf("string: %s\n", string);
 
-            if (!errorZone)
+            if (!strcmp(bigString, string))
             {
-                if (!strcmp(bigString, string))
-                {
-                    KillTimer(hwnd, timer_idt);
-                    hideAllGameWidgets(FALSE);
-                    ShowWindow(resultWindow.box, SW_SHOWNORMAL);
-                    SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
-                    SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
-                    break;
-                }
-                else if (!checkString(bigString, string))
+                KillTimer(hwnd, timerIdt);
+                hideAllGameWidgets(FALSE);
+                ShowWindow(resultWindow.box, SW_SHOWNORMAL);
+                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
+                SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
+            }
+            else if (!checkString(bigString, string))
+            {
+                if (!errorZone)
                 {
                     mistakes++;
-                    SendMessage(gameWindow.errors, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
-                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                    SetTextColor((HDC)wParam, RGB(255, 0, 0));
                     errorZone = TRUE;
-                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
+                    SendMessage(gameWindow.errors, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
                 }
-                else
-                {
-                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                    SetTextColor((HDC)wParam, RGB(0, 0, 0));
-                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                }
+                return changeColor((HDC)wParam, 255, 0, 0);
             }
             else
             {
-                if (checkString(bigString, string))
-                {
-                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                    SetTextColor((HDC)wParam, RGB(0, 0, 0));
+                if (errorZone)
                     errorZone = FALSE;
-                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                }
-                else
-                {
-                    SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-                    SetTextColor((HDC)wParam, RGB(255, 0, 0));
-                    return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
-                }
+                return changeColor((HDC)wParam, 0, 0, 0);
             }
         }
         break;
