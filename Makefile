@@ -40,9 +40,9 @@ $(OBJ_DIR)/%.o: %.c
 
 clean:
 	del /Q /F $(APP_PATH)
-	del /Q /F $(OBJ_DIR)\$(APP_DIR)\*.*
-	del /Q /F $(OBJ_DIR)\$(LIB_DIR)\*.*
-	del /Q /F $(TEST_PATH) $(OBJ_DIR)\$(TEST_DIR)\*.*
+	del /Q /F $(OBJ_DIR)\$(APP_DIR)\*.d $(OBJ_DIR)\$(APP_DIR)\*.o
+	del /Q /F $(OBJ_DIR)\$(LIB_DIR)\*.d $(OBJ_DIR)\$(LIB_DIR)\*.o  $(OBJ_DIR)\$(LIB_DIR)\*.a
+	del /Q /F $(TEST_PATH) $(OBJ_DIR)\$(TEST_DIR)\*.d $(TEST_PATH) $(OBJ_DIR)\$(TEST_DIR)\*.o
 
 run: 
 	$(BIN_DIR)/$(NAME_APP)
