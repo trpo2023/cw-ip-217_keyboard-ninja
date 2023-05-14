@@ -9,21 +9,23 @@
 #define STANDARD_SIZE 255
 #define MAX_ELEMENTS 1024
 
-HINSTANCE hInst;
-HDC hDc;
-HICON icon;
-UINT_PTR timerIdt;
+extern HINSTANCE hInst;
+extern HDC hDc;
+extern HICON icon;
+extern UINT_PTR timerIdt;
 
 extern int mistakes, min, sec;
 extern int numberSigns, step;
 extern BOOL errorZone;
 
-extern char bigString[];
+extern int amount, randomIndex;
+extern char strings[MAX_ELEMENTS / 2][MAX_ELEMENTS / 2];
 
 extern MainWindow mainWindow;
 extern GameWindow gameWindow;
 extern ResultWindow resultWindow;
 
+int putStrings();
 char *createErrorString();
 char *createTimerString();
 char *createSpeedString(int speed);

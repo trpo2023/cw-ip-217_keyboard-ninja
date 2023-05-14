@@ -59,8 +59,8 @@ void createAllWidgets()
     // SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImage);
 
     hFont = createFont(-20);
-
-    gameWindow.textZone = CreateWindow("static", bigString, WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 25, (WIDTH - 65), 200, mainWindow.window, NULL, NULL, NULL);
+        
+    gameWindow.textZone = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 25, (WIDTH - 65), 200, mainWindow.window, NULL, NULL, NULL);
     SendMessage(gameWindow.textZone, WM_SETFONT, (WPARAM)hFont, TRUE);
 
     gameWindow.errors = CreateWindow("static", createErrorString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 25, 225, 185, 75, mainWindow.window, NULL, NULL, NULL);

@@ -1,9 +1,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <time.h>
 
 #include <definitions.h>
 #include <interface.h>
+
+int putStrings()
+{
+    FILE *file = fopen("data/input.txt", "r");
+    if (file == NULL)
+    {
+        printf("Error! Failed to open file!\n");
+        fclose(file);
+        return -1;
+    }
+
+    int count = 0;
+
+    while (fgets(strings[count], MAX_ELEMENTS / 2, file))
+    {
+        count++;
+    }
+    fclose(file);
+    return count;
+}
 
 char *createErrorString()
 {
@@ -141,6 +162,9 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
         {
             printf("Button is here!\n");
             hideMainWidgets();
+            srand(time(NULL));
+            randomIndex = rand() % amount;
+            SendMessage(gameWindow.textZone, WM_SETTEXT, TRUE, (LPARAM)strings[randomIndex]);
             UpdateWindow(hwnd);
             showAllGameWidgets();
             min = 0, sec = 0;
@@ -161,7 +185,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             if (value == EN_UPDATE) // EN_CHANGE (may be use)
                 printf("string: %s\n", string);
 
-            if (!strcmp(bigString, string))
+            if (!strcmp(strings[randomIndex], string))
             {
                 KillTimer(hwnd, timerIdt);
                 hideAllGameWidgets(FALSE);
@@ -169,7 +193,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
                 SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
                 SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
             }
-            else if (!checkString(bigString, string))
+            else if (!checkString(strings[randomIndex], string))
             {
                 if (!errorZone)
                 {

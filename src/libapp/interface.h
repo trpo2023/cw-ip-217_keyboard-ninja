@@ -25,10 +25,6 @@ typedef struct
     HWND box;
 } ResultWindow;
 
-extern MainWindow mainWindow;
-extern GameWindow gameWindow;
-extern ResultWindow resultWindow;
-
 HFONT createFont(int size);
 void hideMainWidgets();
 void showMainWidgets();

@@ -6,11 +6,17 @@
 #include <definitions.h>
 #include <interface.h>
 
+HINSTANCE hInst;
+HDC hDc;
+HICON icon;
+UINT_PTR timerIdt;
+
 int mistakes = 0, min = 0, sec = 0;
 int numberSigns = 0, step = 1;
 BOOL errorZone = FALSE;
 
-char bigString[] = "SI often take books from the school library. The library is helpful when I have to make a report or when I need information on some subjects. The choice of books in our school library is very good. There are many short stories and novels, textbooks and reference books, dictionaries and encyclopedias there.";
+char strings[MAX_ELEMENTS / 2][MAX_ELEMENTS / 2];
+int amount, randomIndex;
 
 MainWindow mainWindow;
 GameWindow gameWindow;
@@ -25,6 +31,7 @@ int main(int argc, char *argv[])
     createWindow();
     ShowWindow(mainWindow.window, SW_SHOWNORMAL);
     UpdateWindow(mainWindow.window);
+    amount = putStrings();
     createAllWidgets();
 
     MSG message;
