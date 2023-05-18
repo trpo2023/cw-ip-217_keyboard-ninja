@@ -44,6 +44,8 @@ void showAllGameWidgets()
 void createWindow()
 {
     mainWindow.window = CreateWindow("Window", "KeyboardNinja", WS_OVERLAPPEDWINDOW, (GetSystemMetrics(SM_CXSCREEN) / 2) - (WIDTH / 2), (GetSystemMetrics(SM_CYSCREEN) / 2) - (HEIGHT / 2), WIDTH, HEIGHT, NULL, NULL, NULL, NULL);
+
+    // mainWindow.background = CreateWindow("static", "", SS_BITMAP | WS_VISIBLE | WS_CHILD, 0, 0, WIDTH, HEIGHT, mainWindow.window, NULL, GetModuleHandle(NULL), NULL);
 }
 
 void createAllWidgets()
@@ -52,6 +54,9 @@ void createAllWidgets()
 
     mainWindow.startButton = CreateWindow("button", "START THE GAME", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 150, 400, 500, 100, mainWindow.window, (HMENU)OnClickedButton, NULL, NULL);
     SendMessage(mainWindow.startButton, WM_SETFONT, (WPARAM)hFont, TRUE);
+
+    HBITMAP hNewBmp = LoadImage(hInst, "data/background.bmp", IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
+    SendMessage(mainWindow.window, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hNewBmp);
 
     showMainWidgets();
 
@@ -63,6 +68,15 @@ void createAllWidgets()
     gameWindow.textZone = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 25, (WIDTH - 65), 200, mainWindow.window, NULL, NULL, NULL);
     SendMessage(gameWindow.textZone, WM_SETFONT, (WPARAM)hFont, TRUE);
 
+    gameWindow.inputZone = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 300, (WIDTH - 65), 200, mainWindow.window, (HMENU)OnInputWindow, NULL, NULL);
+    SendMessage(gameWindow.inputZone, WM_SETFONT, (WPARAM)hFont, TRUE);
+
+    resultWindow.box = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | DT_CENTER, 250, 25, 300, 170, mainWindow.window, NULL, NULL, NULL);
+    SendMessage(resultWindow.box, WM_SETFONT, (WPARAM)hFont, TRUE);
+    ShowWindow(resultWindow.box, SW_HIDE);
+
+    hFont = createFont(-25);
+
     gameWindow.errors = CreateWindow("static", createErrorString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 25, 225, 185, 75, mainWindow.window, NULL, NULL, NULL);
     SendMessage(gameWindow.errors, WM_SETFONT, (WPARAM)hFont, TRUE);
 
@@ -72,15 +86,8 @@ void createAllWidgets()
     gameWindow.speed = CreateWindow("static", createSpeedString(0), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 575, 225, 185, 75, mainWindow.window, NULL, NULL, NULL);
     SendMessage(gameWindow.speed, WM_SETFONT, (WPARAM)hFont, TRUE);
 
-    gameWindow.inputZone = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 300, (WIDTH - 65), 200, mainWindow.window, (HMENU)OnInputWindow, NULL, NULL);
-    SendMessage(gameWindow.inputZone, WM_SETFONT, (WPARAM)hFont, TRUE);
+    
 
     // WS_VSCROLL - для скролла
     hideAllGameWidgets(TRUE);
-
-    hFont = createFont(-25);
-
-    resultWindow.box = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 250, 150, 250, 150, mainWindow.window, NULL, NULL, NULL);
-    SendMessage(gameWindow.speed, WM_SETFONT, (WPARAM)hFont, TRUE);
-    ShowWindow(resultWindow.box, SW_HIDE);
 }

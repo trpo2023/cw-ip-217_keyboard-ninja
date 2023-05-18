@@ -16,7 +16,7 @@ extern UINT_PTR timerIdt;
 
 extern int mistakes, min, sec;
 extern int numberSigns, step;
-extern BOOL errorZone;
+extern BOOL errorZone, isEnd;
 
 extern int amount, randomIndex;
 extern char strings[MAX_ELEMENTS / 2][MAX_ELEMENTS / 2];

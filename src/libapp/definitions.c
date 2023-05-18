@@ -20,10 +20,23 @@ int putStrings()
 
     while (fgets(strings[count], MAX_ELEMENTS / 2, file))
     {
+        int length = strlen(strings[count]);
+        if (strings[count][length - 1] == '\n')
+        {
+            strings[count][length - 1] = '\0';
+        }
         count++;
     }
     fclose(file);
     return count;
+}
+
+int insertPart(char *firstString, char *secondString, int j)
+{
+    for (int i = 0; i < strlen(secondString); i++, j++)
+        firstString[j] = secondString[i];
+    firstString[j] = '\0';
+    return j;
 }
 
 char *createErrorString()
@@ -32,14 +45,9 @@ char *createErrorString()
     char word[] = "Mistakes: ";
     char value[STANDARD_SIZE];
     itoa(mistakes, value, 10);
-    int j = 0;
 
-    for (int i = 0; i < strlen(word); i++, j++)
-        errorString[j] = word[i];
-
-    for (int i = 0; i < strlen(value); i++, j++)
-        errorString[j] = value[i];
-    errorString[j] = '\0';
+    int j = insertPart(errorString, word, 0);
+    j = insertPart(errorString, value, j);
 
     return errorString;
 }
@@ -56,16 +64,13 @@ char *createTimerString()
     if (min < 10)
         string[j++] = '0';
 
-    for (int i = 0; i < strlen(minStr); i++, j++)
-        string[j] = minStr[i];
+    j = insertPart(string, minStr, j);
     string[j++] = ':';
 
     if (sec < 10)
         string[j++] = '0';
 
-    for (int i = 0; i < strlen(secStr); i++, j++)
-        string[j] = secStr[i];
-    string[j] = '\0';
+    j = insertPart(string, secStr, j);
 
     return string;
 }
@@ -76,33 +81,34 @@ char *createSpeedString(int speed)
     char word[] = " ch/min";
     char value[STANDARD_SIZE];
     itoa(speed, value, 10);
-    int j = 0;
-
-    for (int i = 0; i < strlen(value); i++, j++)
-        string[j] = value[i];
-
-    for (int i = 0; i < strlen(word); i++, j++)
-        string[j] = word[i];
-    string[j] = '\0';
+    
+    int j = insertPart(string, value, 0);
+    j = insertPart(string, word, j);
 
     return string;
 }
 
 char *createResultString(char *text)
 {
-    static char resultString[] = "RESULTS\r\nTime: ";
-    int j = strlen(resultString);
+    static char string[] = "RESULTS\n\nTime: ";
+    int j = strlen(string);
 
-    char *timerString = createTimerString();
-    for (int i = 0; i < strlen(timerString); i++, j++)
-    {
-        resultString[j] = timerString[i];
-    }
-    resultString[j] = '\n';
-    j++;
+    j = insertPart(string, createTimerString(), j);
+    string[j++] = '\n';
 
-    resultString[j] = '\0';
-    return resultString;
+    j = insertPart(string, "Speed: ", j);
+    int speed = strlen(text) / (min + ((float) sec / 60));
+    j = insertPart(string, createSpeedString(speed), j);
+    string[j++] = '\n';
+
+    j = insertPart(string, createErrorString(), j);
+    j = insertPart(string, " (", j);
+    int percent = (100 * mistakes) / strlen(text);
+    char value[STANDARD_SIZE];
+    itoa(percent, value, 10);
+    j = insertPart(string, value, j);
+    j = insertPart(string, "%)", j);
+    return string;
 }
 
 BOOL checkString(char *original, char *string)
@@ -149,7 +155,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
         }
         break;
     }
-    case WM_DESTROY:
+    case WM_DESTROY: 
     {
         PostQuitMessage(0);
         break;
@@ -183,15 +189,17 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
 
             if (value == EN_UPDATE) // EN_CHANGE (may be use)
-                printf("string: %s\n", string);
+                printf("%s VS %s\n", string, strings[randomIndex]);
 
-            if (!strcmp(strings[randomIndex], string))
+            if (!strcmp(strings[randomIndex], string) && !isEnd)
             {
+                printf("You are here\n");
                 KillTimer(hwnd, timerIdt);
                 hideAllGameWidgets(FALSE);
-                ShowWindow(resultWindow.box, SW_SHOWNORMAL);
+                ShowWindow(resultWindow.box, SW_SHOW);
                 SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
                 SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
+                isEnd = TRUE;
             }
             else if (!checkString(strings[randomIndex], string))
             {
@@ -227,6 +235,6 @@ WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, HINSTANCE hInst, HICON 
     NWC.hInstance = hInst;
     NWC.lpszClassName = name;
     NWC.lpfnWndProc = softwareMainProcedure;
-    // wcl.hbrBackground = (HBRUSH)CreatePatternBrush((HBITMAP)LoadImage(NULL, TEXT("1.bmp"), 0, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
+    // NWC.hbrBackground = (HBRUSH)CreatePatternBrush((HBITMAP)LoadImage(NULL, TEXT("data/background.bmp"), 0, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
     return NWC;
 }
