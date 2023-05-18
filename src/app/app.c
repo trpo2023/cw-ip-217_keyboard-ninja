@@ -4,9 +4,6 @@
 #include <definitions.h>
 #include <interface.h>
 
-HINSTANCE hInst;
-HDC hDc;
-HICON icon;
 UINT_PTR timerIdt;
 
 int mistakes = 0, min = 0, sec = 0;
@@ -23,7 +20,7 @@ ResultWindow resultWindow;
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "Rus");
-    WNDCLASSA NWC = newWindowClass((HBRUSH)(LTGRAY_BRUSH), LoadCursor(NULL, IDC_ARROW), hInst, icon, "Window", softwareMainProcedure);
+    WNDCLASSA NWC = newWindowClass((HBRUSH)(LTGRAY_BRUSH), LoadCursor(NULL, IDC_ARROW), "Window", softwareMainProcedure);
     RegisterClassA(&NWC);
 
     createWindow();

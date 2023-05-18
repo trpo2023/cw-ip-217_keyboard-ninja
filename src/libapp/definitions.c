@@ -88,7 +88,7 @@ char *createSpeedString(int speed)
     return string;
 }
 
-char *createResultString(char *text, char *string)
+void createResultString(char *text, char *string)
 {
     int j = insertPart(string, "RESULTS\n\nTime: ", 0);
 
@@ -107,7 +107,6 @@ char *createResultString(char *text, char *string)
     itoa(percent, value, 10);
     j = insertPart(string, value, j);
     j = insertPart(string, "%)", j);
-    return string;
 }
 
 BOOL checkString(char *original, char *string)
@@ -201,7 +200,6 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             createGameWidgets();
             createInputZone();
             prepareForStart(hwnd);
-            UpdateWindow(hwnd);
             break;
         }
         case MAIN_MENU_BUTTON:
@@ -211,7 +209,6 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             destroyResultWidgets();
             destroyInputZone();
             createMainWidgets();
-            UpdateWindow(hwnd);
             break;
         }
         case NEXT_GAME_BUTTON:
@@ -224,9 +221,16 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
             createGameWidgets();
             createInputZone();
             prepareForStart(hwnd);
-            UpdateWindow(hwnd);
             break;
         }
+        }
+    }
+    case WM_CTLCOLORSTATIC:
+    {
+        if ((HWND)lParam == GetDlgItem(hwnd, HEADER))
+        {
+            SetBkMode((HDC)wParam, LTGRAY_BRUSH);
+            return (INT_PTR)GetStockObject(NULL_BRUSH);
         }
     }
     case WM_CTLCOLOREDIT:
@@ -234,12 +238,8 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
         if ((HWND)lParam == GetDlgItem(hwnd, INPUT_WINDOW))
         {
             numberSigns++;
-            int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
             char string[MAX_ELEMENTS];
             GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
-
-            if (value == EN_UPDATE) // EN_CHANGE (may be use)
-                printf("%s VS %s\n", string, strings[randomIndex]);
 
             if (!strcmp(strings[randomIndex], string) && !isEnd)
             {
@@ -250,6 +250,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
                 createResultString(string, resultString);
                 SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)resultString);
                 SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
+                HideCaret(gameWindow.inputZone);
                 isEnd = TRUE;
                 return changeColor((HDC)wParam, 0, 255, 0);
             }
@@ -278,15 +279,13 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
     return 0;
 }
 
-WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, HINSTANCE hInst, HICON icon, char *name, WNDPROC procedure)
+WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, char *name, WNDPROC procedure)
 {
     WNDCLASSA NWC;
     memset(&NWC, 0, sizeof(WNDCLASSA));
     NWC.hbrBackground = BGColor;
     NWC.hCursor = cursor;
-    NWC.hInstance = hInst;
     NWC.lpszClassName = name;
     NWC.lpfnWndProc = softwareMainProcedure;
-    // NWC.hbrBackground = (HBRUSH)CreatePatternBrush((HBITMAP)LoadImage(NULL, TEXT("data/background.bmp"), 0, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
     return NWC;
 }

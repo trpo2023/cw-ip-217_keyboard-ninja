@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <string.h>
 
 #include <definitions.h>
 #include <interface.h>
@@ -9,43 +10,45 @@ HFONT createFont(int size)
     ZeroMemory(&logfont, sizeof(LOGFONT));
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfHeight = size; // Размер шрифта
+    logfont.lfWeight = 10;
+    strcpy(logfont.lfFaceName, "Tahoma"); 
     return CreateFontIndirect(&logfont);
 }
 
 void createWindow()
 {
     mainWindow.window = CreateWindow("Window", "KeyboardNinja", WS_OVERLAPPEDWINDOW, (GetSystemMetrics(SM_CXSCREEN) / 2) - (WIDTH / 2), (GetSystemMetrics(SM_CYSCREEN) / 2) - (HEIGHT / 2), WIDTH, HEIGHT, NULL, NULL, NULL, NULL);
-
-    // mainWindow.background = CreateWindow("static", "", SS_BITMAP | WS_VISIBLE | WS_CHILD, 0, 0, WIDTH, HEIGHT, mainWindow.window, NULL, GetModuleHandle(NULL), NULL);
 }
 
 void createMainWidgets()
 {
-    mainWindow.startButton = CreateWindow("button", "START THE GAME", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 150, 400, 500, 100, mainWindow.window, (HMENU)START_GAME_BUTTON, NULL, NULL);
-    SendMessage(mainWindow.startButton, WM_SETFONT, (WPARAM)createFont(-30), TRUE);
+    mainWindow.header = CreateWindow("static", "KEYBOARD NINJA", WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 0, 75, WIDTH, 200, mainWindow.window, (HMENU)HEADER, NULL, NULL);
+    SendMessage(mainWindow.header, WM_SETFONT, (WPARAM)createFont(-90), TRUE);
 
-    // HBITMAP hNewBmp = LoadImage(hInst, "data/background.bmp", IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-    // SendMessage(mainWindow.window, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hNewBmp);
+    mainWindow.startButton = CreateWindow("button", "Start the Game", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 150, 250, 500, 100, mainWindow.window, (HMENU)START_GAME_BUTTON, NULL, NULL);
+    SendMessage(mainWindow.startButton, WM_SETFONT, (WPARAM)createFont(-40), TRUE);
 
-    // HBITMAP hImage = LoadImage(NULL, "background.bmp", IMAGE_BITMAP, 800, 600, LR_LOADFROMFILE);
-    // SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImage);
+    mainWindow.statisticButton = CreateWindow("button", "Statistics", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 320, 500, 150, 50, mainWindow.window, (HMENU)STATISTICS_BUTTON, NULL, NULL);
+    SendMessage(mainWindow.startButton, WM_SETFONT, (WPARAM)createFont(-40), TRUE);
 
+    ShowWindow(mainWindow.header, SW_SHOWNORMAL);
     ShowWindow(mainWindow.startButton, SW_SHOWNORMAL);
+    ShowWindow(mainWindow.statisticButton, SW_SHOWNORMAL);
 }
 
 void createGameWidgets()
 {
-    gameWindow.textZone = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 25, (WIDTH - 65), 200, mainWindow.window, NULL, NULL, NULL);
+    gameWindow.textZone = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | WS_BORDER, 25, 10, (WIDTH - 65), 210, mainWindow.window, NULL, NULL, NULL);
     SendMessage(gameWindow.textZone, WM_SETFONT, (WPARAM)createFont(-20), TRUE);
 
-    gameWindow.errors = CreateWindow("static", createErrorString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 25, 225, 185, 75, mainWindow.window, (HMENU)ERRORS_WINDOW, NULL, NULL);
-    SendMessage(gameWindow.errors, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
+    gameWindow.errors = CreateWindow("static", createErrorString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER | WS_BORDER, 25, 235, 185, 75, mainWindow.window, (HMENU)ERRORS_WINDOW, NULL, NULL);
+    SendMessage(gameWindow.errors, WM_SETFONT, (WPARAM)createFont(-27), TRUE);
 
-    gameWindow.timer = CreateWindow("static", createTimerString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 300, 225, 185, 75, mainWindow.window, NULL, NULL, NULL);
-    SendMessage(gameWindow.timer, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
+    gameWindow.timer = CreateWindow("static", createTimerString(), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER | WS_BORDER, 300, 235, 185, 75, mainWindow.window, NULL, NULL, NULL);
+    SendMessage(gameWindow.timer, WM_SETFONT, (WPARAM)createFont(-27), TRUE);
 
-    gameWindow.speed = CreateWindow("static", createSpeedString(0), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER, 575, 225, 185, 75, mainWindow.window, NULL, NULL, NULL);
-    SendMessage(gameWindow.speed, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
+    gameWindow.speed = CreateWindow("static", createSpeedString(0), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE | DT_CENTER | WS_BORDER, 575, 235, 185, 75, mainWindow.window, NULL, NULL, NULL);
+    SendMessage(gameWindow.speed, WM_SETFONT, (WPARAM)createFont(-27), TRUE);
 
     ShowWindow(gameWindow.textZone, SW_SHOWNORMAL);
     ShowWindow(gameWindow.errors, SW_SHOWNORMAL);
@@ -55,7 +58,7 @@ void createGameWidgets()
 
 void createInputZone()
 {
-    gameWindow.inputZone = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 300, (WIDTH - 65), 200, mainWindow.window, (HMENU)INPUT_WINDOW, NULL, NULL);
+    gameWindow.inputZone = CreateWindow("edit", "", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE, 25, 325, (WIDTH - 65), 210, mainWindow.window, (HMENU)INPUT_WINDOW, NULL, NULL);
     SendMessage(gameWindow.inputZone, WM_SETFONT, (WPARAM)createFont(-20), TRUE);
 
     ShowWindow(gameWindow.inputZone, SW_SHOWNORMAL);
@@ -63,13 +66,13 @@ void createInputZone()
 
 void createResultWidgets()
 {
-    resultWindow.box = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | DT_CENTER, 230, 25, 310, 170, mainWindow.window, NULL, NULL, NULL);
-    SendMessage(resultWindow.box, WM_SETFONT, (WPARAM)createFont(-20), TRUE);
+    resultWindow.box = CreateWindow("static", "", WS_VISIBLE | WS_CHILD | DT_CENTER, 230, 25, 310, 205, mainWindow.window, NULL, NULL, NULL);
+    SendMessage(resultWindow.box, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
 
-    resultWindow.menuButton = CreateWindow("button", "Back to menu", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 180, 210, 200, 70, mainWindow.window, (HMENU)MAIN_MENU_BUTTON, NULL, NULL);
+    resultWindow.menuButton = CreateWindow("button", "Back to menu", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 180, 240, 200, 70, mainWindow.window, (HMENU)MAIN_MENU_BUTTON, NULL, NULL);
     SendMessage(resultWindow.menuButton, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
 
-    resultWindow.nextGameButton = CreateWindow("button", "Play again", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 390, 210, 200, 70, mainWindow.window, (HMENU)NEXT_GAME_BUTTON, NULL, NULL);
+    resultWindow.nextGameButton = CreateWindow("button", "Play again", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 390, 240, 200, 70, mainWindow.window, (HMENU)NEXT_GAME_BUTTON, NULL, NULL);
     SendMessage(resultWindow.nextGameButton, WM_SETFONT, (WPARAM)createFont(-25), TRUE);
 
     ShowWindow(resultWindow.box, SW_SHOWNORMAL);
@@ -80,6 +83,8 @@ void createResultWidgets()
 void destroyMainWidgets()
 {
     DestroyWindow(mainWindow.startButton);
+    DestroyWindow(mainWindow.header);
+    DestroyWindow(mainWindow.statisticButton);
 }
 
 void destroyGameWidgets()
