@@ -88,10 +88,9 @@ char *createSpeedString(int speed)
     return string;
 }
 
-char *createResultString(char *text)
+char *createResultString(char *text, char *string)
 {
-    static char string[] = "RESULTS\n\nTime: ";
-    int j = strlen(string);
+    int j = insertPart(string, "RESULTS\n\nTime: ", 0);
 
     j = insertPart(string, createTimerString(), j);
     string[j++] = '\n';
@@ -128,10 +127,39 @@ LRESULT changeColor(HDC wParam, int red, int green, int blue)
     return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
 }
 
+void prepareForStart(HWND hwnd)
+{
+    srand(time(NULL));
+    randomIndex = rand() % amount;
+    SendMessage(gameWindow.textZone, WM_SETTEXT, TRUE, (LPARAM)strings[randomIndex]);
+    SetTimer(hwnd, timerIdt, 1000, NULL); // Ставим таймер на 1 секунду
+}
+
 LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    // case WM_SETCURSOR:
+    // {
+    //     LPPOINT cursor;
+    //     cursor = malloc(sizeof(*cursor));
+
+    //     GetCursorPos(cursor);
+    //     ScreenToClient(hwnd, cursor);
+
+    //     printf("%ld %ld\n", cursor[0].x, cursor[0].y);
+
+    //     if (isStart && ((cursor[0].x >= 150 && cursor[0].x <= 650) && (cursor[0].y >= 400 && cursor[0].y <= 500)))
+    //     {
+    //         printf("YEAH\n");
+    //         SetCursor(LoadCursor(NULL, IDC_HAND));
+    //     }
+    //     else
+    //     {
+    //         SetCursor(LoadCursor(NULL, IDC_ARROW));
+    //     }
+    //     break;
+    // }
     case WM_TIMER:
     {
         if (sec > 59)
@@ -164,24 +192,46 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
     {
         switch (LOWORD(wParam))
         {
-        case OnClickedButton:
+        case START_GAME_BUTTON:
         {
-            printf("Button is here!\n");
-            hideMainWidgets();
-            srand(time(NULL));
-            randomIndex = rand() % amount;
-            SendMessage(gameWindow.textZone, WM_SETTEXT, TRUE, (LPARAM)strings[randomIndex]);
+            isStart = FALSE;
+            isEnd = FALSE;
+            mistakes = 0, min = 0, sec = 0;
+            destroyMainWidgets();
+            createGameWidgets();
+            createInputZone();
+            prepareForStart(hwnd);
             UpdateWindow(hwnd);
-            showAllGameWidgets();
-            min = 0, sec = 0;
-            SetTimer(hwnd, timerIdt, 1000, NULL); // Ставим таймер на 1 секунду
+            break;
+        }
+        case MAIN_MENU_BUTTON:
+        {
+            isStart = TRUE;
+            isEnd = FALSE;
+            destroyResultWidgets();
+            destroyInputZone();
+            createMainWidgets();
+            UpdateWindow(hwnd);
+            break;
+        }
+        case NEXT_GAME_BUTTON:
+        {
+            isEnd = FALSE;
+            mistakes = 0, min = 0, sec = 0;
+            destroyGameWidgets();
+            destroyInputZone();
+            destroyResultWidgets();
+            createGameWidgets();
+            createInputZone();
+            prepareForStart(hwnd);
+            UpdateWindow(hwnd);
             break;
         }
         }
     }
     case WM_CTLCOLOREDIT:
     {
-        if ((HWND)lParam == GetDlgItem(hwnd, OnInputWindow))
+        if ((HWND)lParam == GetDlgItem(hwnd, INPUT_WINDOW))
         {
             numberSigns++;
             int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
@@ -193,13 +243,15 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
 
             if (!strcmp(strings[randomIndex], string) && !isEnd)
             {
-                printf("You are here\n");
                 KillTimer(hwnd, timerIdt);
-                hideAllGameWidgets(FALSE);
-                ShowWindow(resultWindow.box, SW_SHOW);
-                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
+                destroyGameWidgets();
+                createResultWidgets();
+                char resultString[MAX_ELEMENTS];
+                createResultString(string, resultString);
+                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)resultString);
                 SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
                 isEnd = TRUE;
+                return changeColor((HDC)wParam, 0, 255, 0);
             }
             else if (!checkString(strings[randomIndex], string))
             {

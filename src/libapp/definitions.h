@@ -4,8 +4,6 @@
 
 #include <interface.h>
 
-#define OnClickedButton 1
-#define OnInputWindow 2
 #define STANDARD_SIZE 255
 #define MAX_ELEMENTS 1024
 
@@ -13,10 +11,11 @@ extern HINSTANCE hInst;
 extern HDC hDc;
 extern HICON icon;
 extern UINT_PTR timerIdt;
+extern HBITMAP hBitmap01;
 
 extern int mistakes, min, sec;
 extern int numberSigns, step;
-extern BOOL errorZone, isEnd;
+extern BOOL errorZone, isStart, isEnd;
 
 extern int amount, randomIndex;
 extern char strings[MAX_ELEMENTS / 2][MAX_ELEMENTS / 2];
@@ -29,7 +28,9 @@ int putStrings();
 char *createErrorString();
 char *createTimerString();
 char *createSpeedString(int speed);
-char *createResultString(char *text);
+char *createResultString(char *text, char *string);
 BOOL checkString(char *original, char *string);
+LRESULT changeColor(HDC wParam, int red, int green, int blue);
+void prepareForStart(HWND hwnd);
 LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, HINSTANCE hInst, HICON icon, char *name, WNDPROC procedure);
