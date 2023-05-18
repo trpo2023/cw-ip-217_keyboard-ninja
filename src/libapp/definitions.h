@@ -6,6 +6,7 @@
 
 #define STANDARD_SIZE 255
 #define MAX_ELEMENTS 1024
+#define MIN_ELEMENTS 10
 
 extern UINT_PTR timerIdt;
 

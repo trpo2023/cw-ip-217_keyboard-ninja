@@ -3,6 +3,7 @@
 
 #include <definitions.h>
 #include <interface.h>
+#include <parser.h>
 
 UINT_PTR timerIdt;
 

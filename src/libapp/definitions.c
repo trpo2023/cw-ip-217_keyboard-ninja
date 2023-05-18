@@ -5,31 +5,7 @@
 
 #include <definitions.h>
 #include <interface.h>
-
-int putStrings()
-{
-    FILE *file = fopen("data/input.txt", "r");
-    if (file == NULL)
-    {
-        printf("Error! Failed to open file!\n");
-        fclose(file);
-        return -1;
-    }
-
-    int count = 0;
-
-    while (fgets(strings[count], MAX_ELEMENTS / 2, file))
-    {
-        int length = strlen(strings[count]);
-        if (strings[count][length - 1] == '\n')
-        {
-            strings[count][length - 1] = '\0';
-        }
-        count++;
-    }
-    fclose(file);
-    return count;
-}
+#include <parser.h>
 
 int insertPart(char *firstString, char *secondString, int j)
 {
@@ -107,6 +83,8 @@ void createResultString(char *text, char *string)
     itoa(percent, value, 10);
     j = insertPart(string, value, j);
     j = insertPart(string, "%)", j);
+
+    saveResults(speed, percent);
 }
 
 BOOL checkString(char *original, char *string)
