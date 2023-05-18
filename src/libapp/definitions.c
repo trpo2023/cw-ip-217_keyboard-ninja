@@ -5,25 +5,14 @@
 
 #include <definitions.h>
 #include <interface.h>
+#include <parser.h>
 
-int putStrings()
+int insertPart(char *firstString, char *secondString, int j)
 {
-    FILE *file = fopen("data/input.txt", "r");
-    if (file == NULL)
-    {
-        printf("Error! Failed to open file!\n");
-        fclose(file);
-        return -1;
-    }
-
-    int count = 0;
-
-    while (fgets(strings[count], MAX_ELEMENTS / 2, file))
-    {
-        count++;
-    }
-    fclose(file);
-    return count;
+    for (int i = 0; i < strlen(secondString); i++, j++)
+        firstString[j] = secondString[i];
+    firstString[j] = '\0';
+    return j;
 }
 
 char *createErrorString()
@@ -32,14 +21,9 @@ char *createErrorString()
     char word[] = "Mistakes: ";
     char value[STANDARD_SIZE];
     itoa(mistakes, value, 10);
-    int j = 0;
 
-    for (int i = 0; i < strlen(word); i++, j++)
-        errorString[j] = word[i];
-
-    for (int i = 0; i < strlen(value); i++, j++)
-        errorString[j] = value[i];
-    errorString[j] = '\0';
+    int j = insertPart(errorString, word, 0);
+    j = insertPart(errorString, value, j);
 
     return errorString;
 }
@@ -56,16 +40,13 @@ char *createTimerString()
     if (min < 10)
         string[j++] = '0';
 
-    for (int i = 0; i < strlen(minStr); i++, j++)
-        string[j] = minStr[i];
+    j = insertPart(string, minStr, j);
     string[j++] = ':';
 
     if (sec < 10)
         string[j++] = '0';
 
-    for (int i = 0; i < strlen(secStr); i++, j++)
-        string[j] = secStr[i];
-    string[j] = '\0';
+    j = insertPart(string, secStr, j);
 
     return string;
 }
@@ -76,33 +57,34 @@ char *createSpeedString(int speed)
     char word[] = " ch/min";
     char value[STANDARD_SIZE];
     itoa(speed, value, 10);
-    int j = 0;
-
-    for (int i = 0; i < strlen(value); i++, j++)
-        string[j] = value[i];
-
-    for (int i = 0; i < strlen(word); i++, j++)
-        string[j] = word[i];
-    string[j] = '\0';
+    
+    int j = insertPart(string, value, 0);
+    j = insertPart(string, word, j);
 
     return string;
 }
 
-char *createResultString(char *text)
+void createResultString(char *text, char *string)
 {
-    static char resultString[] = "RESULTS\r\nTime: ";
-    int j = strlen(resultString);
+    int j = insertPart(string, "RESULTS\n\nTime: ", 0);
 
-    char *timerString = createTimerString();
-    for (int i = 0; i < strlen(timerString); i++, j++)
-    {
-        resultString[j] = timerString[i];
-    }
-    resultString[j] = '\n';
-    j++;
+    j = insertPart(string, createTimerString(), j);
+    string[j++] = '\n';
 
-    resultString[j] = '\0';
-    return resultString;
+    j = insertPart(string, "Speed: ", j);
+    int speed = strlen(text) / (min + ((float) sec / 60));
+    j = insertPart(string, createSpeedString(speed), j);
+    string[j++] = '\n';
+
+    j = insertPart(string, createErrorString(), j);
+    j = insertPart(string, " (", j);
+    int percent = (100 * mistakes) / strlen(text);
+    char value[STANDARD_SIZE];
+    itoa(percent, value, 10);
+    j = insertPart(string, value, j);
+    j = insertPart(string, "%)", j);
+
+    saveResults(speed, percent);
 }
 
 BOOL checkString(char *original, char *string)
@@ -122,10 +104,39 @@ LRESULT changeColor(HDC wParam, int red, int green, int blue)
     return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
 }
 
+void prepareForStart(HWND hwnd)
+{
+    srand(time(NULL));
+    randomIndex = rand() % amount;
+    SendMessage(gameWindow.textZone, WM_SETTEXT, TRUE, (LPARAM)strings[randomIndex]);
+    SetTimer(hwnd, timerIdt, 1000, NULL); // Ставим таймер на 1 секунду
+}
+
 LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    // case WM_SETCURSOR:
+    // {
+    //     LPPOINT cursor;
+    //     cursor = malloc(sizeof(*cursor));
+
+    //     GetCursorPos(cursor);
+    //     ScreenToClient(hwnd, cursor);
+
+    //     printf("%ld %ld\n", cursor[0].x, cursor[0].y);
+
+    //     if (isStart && ((cursor[0].x >= 150 && cursor[0].x <= 650) && (cursor[0].y >= 400 && cursor[0].y <= 500)))
+    //     {
+    //         printf("YEAH\n");
+    //         SetCursor(LoadCursor(NULL, IDC_HAND));
+    //     }
+    //     else
+    //     {
+    //         SetCursor(LoadCursor(NULL, IDC_ARROW));
+    //     }
+    //     break;
+    // }
     case WM_TIMER:
     {
         if (sec > 59)
@@ -149,7 +160,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
         }
         break;
     }
-    case WM_DESTROY:
+    case WM_DESTROY: 
     {
         PostQuitMessage(0);
         break;
@@ -158,40 +169,68 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
     {
         switch (LOWORD(wParam))
         {
-        case OnClickedButton:
+        case START_GAME_BUTTON:
         {
-            printf("Button is here!\n");
-            hideMainWidgets();
-            srand(time(NULL));
-            randomIndex = rand() % amount;
-            SendMessage(gameWindow.textZone, WM_SETTEXT, TRUE, (LPARAM)strings[randomIndex]);
-            UpdateWindow(hwnd);
-            showAllGameWidgets();
-            min = 0, sec = 0;
-            SetTimer(hwnd, timerIdt, 1000, NULL); // Ставим таймер на 1 секунду
+            isStart = FALSE;
+            isEnd = FALSE;
+            mistakes = 0, min = 0, sec = 0;
+            destroyMainWidgets();
+            createGameWidgets();
+            createInputZone();
+            prepareForStart(hwnd);
+            break;
+        }
+        case MAIN_MENU_BUTTON:
+        {
+            isStart = TRUE;
+            isEnd = FALSE;
+            destroyResultWidgets();
+            destroyInputZone();
+            createMainWidgets();
+            break;
+        }
+        case NEXT_GAME_BUTTON:
+        {
+            isEnd = FALSE;
+            mistakes = 0, min = 0, sec = 0;
+            destroyGameWidgets();
+            destroyInputZone();
+            destroyResultWidgets();
+            createGameWidgets();
+            createInputZone();
+            prepareForStart(hwnd);
             break;
         }
         }
     }
+    case WM_CTLCOLORSTATIC:
+    {
+        if ((HWND)lParam == GetDlgItem(hwnd, HEADER))
+        {
+            SetBkMode((HDC)wParam, LTGRAY_BRUSH);
+            return (INT_PTR)GetStockObject(NULL_BRUSH);
+        }
+    }
     case WM_CTLCOLOREDIT:
     {
-        if ((HWND)lParam == GetDlgItem(hwnd, OnInputWindow))
+        if ((HWND)lParam == GetDlgItem(hwnd, INPUT_WINDOW))
         {
             numberSigns++;
-            int value = HIWORD(wParam); // макрос HIWORD извлекает из wParam значение кода уведомления
             char string[MAX_ELEMENTS];
             GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
 
-            if (value == EN_UPDATE) // EN_CHANGE (may be use)
-                printf("string: %s\n", string);
-
-            if (!strcmp(strings[randomIndex], string))
+            if (!strcmp(strings[randomIndex], string) && !isEnd)
             {
                 KillTimer(hwnd, timerIdt);
-                hideAllGameWidgets(FALSE);
-                ShowWindow(resultWindow.box, SW_SHOWNORMAL);
-                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)createResultString(string));
+                destroyGameWidgets();
+                createResultWidgets();
+                char resultString[MAX_ELEMENTS];
+                createResultString(string, resultString);
+                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)resultString);
                 SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
+                HideCaret(gameWindow.inputZone);
+                isEnd = TRUE;
+                return changeColor((HDC)wParam, 0, 255, 0);
             }
             else if (!checkString(strings[randomIndex], string))
             {
@@ -218,15 +257,13 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
     return 0;
 }
 
-WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, HINSTANCE hInst, HICON icon, char *name, WNDPROC procedure)
+WNDCLASSA newWindowClass(HBRUSH BGColor, HCURSOR cursor, char *name, WNDPROC procedure)
 {
     WNDCLASSA NWC;
     memset(&NWC, 0, sizeof(WNDCLASSA));
     NWC.hbrBackground = BGColor;
     NWC.hCursor = cursor;
-    NWC.hInstance = hInst;
     NWC.lpszClassName = name;
     NWC.lpfnWndProc = softwareMainProcedure;
-    // wcl.hbrBackground = (HBRUSH)CreatePatternBrush((HBITMAP)LoadImage(NULL, TEXT("1.bmp"), 0, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
     return NWC;
 }
