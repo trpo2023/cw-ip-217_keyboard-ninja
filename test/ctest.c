@@ -30,3 +30,31 @@ CTEST(DATA_FILE, CHECK_EMPTY_FILE)
 {
     ASSERT_EQUAL(0, strcmp("No games have been played yet.", createStatisticsString("text/input/values.txt")));
 }
+
+// Проверяет добавление новой записи в файл
+CTEST(OUTPUT_FILE, CHECK_NEW_LINE)
+{
+    ASSERT_EQUAL(0, saveResults("test/input/values.txt", 600, 2));
+    ASSERT_EQUAL(0, saveResults("test/input/values.txt", 232, 6));
+    ASSERT_EQUAL(0, saveResults("test/input/values.txt", 134, 0));
+
+    FILE *file = fopen("test/input/values.txt", "r");
+
+    int count = 0;
+    char container[MAX_ELEMENTS / 2];
+
+    while (fgets(container, MAX_ELEMENTS / 2, file))
+    {
+        if (count == 0)
+            ASSERT_EQUAL(0, strcmp(container, "600 2\n"));
+        else if (count == 1)
+            ASSERT_EQUAL(0, strcmp(container, "232 6\n"));
+        else if (count == 2)
+            ASSERT_EQUAL(0, strcmp(container, "134 0\n"));
+        else
+            break;
+        count++;
+    }
+
+    fclose(file);
+}
