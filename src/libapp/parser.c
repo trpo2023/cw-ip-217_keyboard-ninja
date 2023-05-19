@@ -67,7 +67,7 @@ char *createStatisticsString()
 
         for (j = 0; container[j] != ' '; j++)
         {
-            speedStr[j] = container[j]; 
+            speedStr[j] = container[j];
         }
         speedStr[j++] = '\0';
 

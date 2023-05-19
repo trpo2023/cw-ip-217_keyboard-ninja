@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <windows.h>
 #include <time.h>
+#include <windows.h>
 
 #include <definitions.h>
 #include <interface.h>
@@ -57,7 +57,7 @@ char *createSpeedString(int speed)
     char word[] = " ch/min";
     char value[STANDARD_SIZE];
     itoa(speed, value, 10);
-    
+
     int j = insertPart(string, value, 0);
     j = insertPart(string, word, j);
 
@@ -72,7 +72,7 @@ void createResultString(char *text, char *string)
     string[j++] = '\n';
 
     j = insertPart(string, "Speed: ", j);
-    int speed = strlen(text) / (min + ((float) sec / 60));
+    int speed = strlen(text) / (min + ((float)sec / 60));
     j = insertPart(string, createSpeedString(speed), j);
     string[j++] = '\n';
 
@@ -116,148 +116,148 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
 {
     switch (message)
     {
-    // case WM_SETCURSOR:
-    // {
-    //     LPPOINT cursor;
-    //     cursor = malloc(sizeof(*cursor));
+        // case WM_SETCURSOR:
+        // {
+        //     LPPOINT cursor;
+        //     cursor = malloc(sizeof(*cursor));
 
-    //     GetCursorPos(cursor);
-    //     ScreenToClient(hwnd, cursor);
+        //     GetCursorPos(cursor);
+        //     ScreenToClient(hwnd, cursor);
 
-    //     printf("%ld %ld\n", cursor[0].x, cursor[0].y);
+        //     printf("%ld %ld\n", cursor[0].x, cursor[0].y);
 
-    //     if (isStart && ((cursor[0].x >= 150 && cursor[0].x <= 650) && (cursor[0].y >= 400 && cursor[0].y <= 500)))
-    //     {
-    //         printf("YEAH\n");
-    //         SetCursor(LoadCursor(NULL, IDC_HAND));
-    //     }
-    //     else
-    //     {
-    //         SetCursor(LoadCursor(NULL, IDC_ARROW));
-    //     }
-    //     break;
-    // }
-    case WM_TIMER:
-    {
-        if (sec > 59)
+        //     if (isStart && ((cursor[0].x >= 150 && cursor[0].x <= 650) && (cursor[0].y >= 400 && cursor[0].y <= 500)))
+        //     {
+        //         printf("YEAH\n");
+        //         SetCursor(LoadCursor(NULL, IDC_HAND));
+        //     }
+        //     else
+        //     {
+        //         SetCursor(LoadCursor(NULL, IDC_ARROW));
+        //     }
+        //     break;
+        // }
+        case WM_TIMER:
         {
-            sec = 0;
-            min++;
-        }
-        else
-        {
-            sec++;
-        }
-        SendMessage(gameWindow.timer, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
-        int signs = numberSigns / 3;
-        int currentSpeed = signs / ((float)step / 60);
-        SendMessage(gameWindow.speed, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
-        step++;
-        if (step == 5)
-        {
-            numberSigns = 0;
-            step = 1;
-        }
-        break;
-    }
-    case WM_DESTROY: 
-    {
-        PostQuitMessage(0);
-        break;
-    }
-    case WM_COMMAND:
-    {
-        switch (LOWORD(wParam))
-        {
-        case START_GAME_BUTTON:
-        {
-            isStart = FALSE;
-            isEnd = FALSE;
-            mistakes = 0, min = 0, sec = 0;
-            destroyMainWidgets();
-            createGameWidgets();
-            createInputZone();
-            prepareForStart(hwnd);
-            break;
-        }
-        case STATISTICS_BUTTON:
-        {
-            MessageBox(hwnd, createStatisticsString(), "Statistics", MB_DEFBUTTON1);
-            break;
-        }
-        case MAIN_MENU_BUTTON:
-        {
-            isStart = TRUE;
-            isEnd = FALSE;
-            destroyResultWidgets();
-            destroyInputZone();
-            createMainWidgets();
-            break;
-        }
-        case NEXT_GAME_BUTTON:
-        {
-            isEnd = FALSE;
-            mistakes = 0, min = 0, sec = 0;
-            destroyGameWidgets();
-            destroyInputZone();
-            destroyResultWidgets();
-            createGameWidgets();
-            createInputZone();
-            prepareForStart(hwnd);
-            break;
-        }
-        }
-    }
-    case WM_CTLCOLORSTATIC:
-    {
-        if ((HWND)lParam == GetDlgItem(hwnd, HEADER))
-        {
-            SetBkMode((HDC)wParam, LTGRAY_BRUSH);
-            return (INT_PTR)GetStockObject(NULL_BRUSH);
-        }
-    }
-    case WM_CTLCOLOREDIT:
-    {
-        if ((HWND)lParam == GetDlgItem(hwnd, INPUT_WINDOW))
-        {
-            numberSigns++;
-            char string[MAX_ELEMENTS];
-            GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
-
-            if (!strcmp(strings[randomIndex], string) && !isEnd)
+            if (sec > 59)
             {
-                KillTimer(hwnd, timerIdt);
-                destroyGameWidgets();
-                createResultWidgets();
-                char resultString[MAX_ELEMENTS];
-                createResultString(string, resultString);
-                SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)resultString);
-                SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
-                HideCaret(gameWindow.inputZone);
-                isEnd = TRUE;
-                return changeColor((HDC)wParam, 0, 255, 0);
-            }
-            else if (!checkString(strings[randomIndex], string))
-            {
-                if (!errorZone)
-                {
-                    mistakes++;
-                    errorZone = TRUE;
-                    SendMessage(gameWindow.errors, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
-                }
-                return changeColor((HDC)wParam, 255, 0, 0);
+                sec = 0;
+                min++;
             }
             else
             {
-                if (errorZone)
-                    errorZone = FALSE;
-                return changeColor((HDC)wParam, 0, 0, 0);
+                sec++;
+            }
+            SendMessage(gameWindow.timer, WM_SETTEXT, TRUE, (LPARAM)createTimerString());
+            int signs = numberSigns / 3;
+            int currentSpeed = signs / ((float)step / 60);
+            SendMessage(gameWindow.speed, WM_SETTEXT, TRUE, (LPARAM)createSpeedString(currentSpeed));
+            step++;
+            if (step == 5)
+            {
+                numberSigns = 0;
+                step = 1;
+            }
+            break;
+        }
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+            break;
+        }
+        case WM_COMMAND:
+        {
+            switch (LOWORD(wParam))
+            {
+                case START_GAME_BUTTON:
+                {
+                    isStart = FALSE;
+                    isEnd = FALSE;
+                    mistakes = 0, min = 0, sec = 0;
+                    destroyMainWidgets();
+                    createGameWidgets();
+                    createInputZone();
+                    prepareForStart(hwnd);
+                    break;
+                }
+                case STATISTICS_BUTTON:
+                {
+                    MessageBox(hwnd, createStatisticsString(), "Statistics", MB_DEFBUTTON1);
+                    break;
+                }
+                case MAIN_MENU_BUTTON:
+                {
+                    isStart = TRUE;
+                    isEnd = FALSE;
+                    destroyResultWidgets();
+                    destroyInputZone();
+                    createMainWidgets();
+                    break;
+                }
+                case NEXT_GAME_BUTTON:
+                {
+                    isEnd = FALSE;
+                    mistakes = 0, min = 0, sec = 0;
+                    destroyGameWidgets();
+                    destroyInputZone();
+                    destroyResultWidgets();
+                    createGameWidgets();
+                    createInputZone();
+                    prepareForStart(hwnd);
+                    break;
+                }
             }
         }
-        break;
-    }
-    default:
-        return DefWindowProcA(hwnd, message, wParam, lParam);
+        case WM_CTLCOLORSTATIC:
+        {
+            if ((HWND)lParam == GetDlgItem(hwnd, HEADER))
+            {
+                SetBkMode((HDC)wParam, LTGRAY_BRUSH);
+                return (INT_PTR)GetStockObject(NULL_BRUSH);
+            }
+        }
+        case WM_CTLCOLOREDIT:
+        {
+            if ((HWND)lParam == GetDlgItem(hwnd, INPUT_WINDOW))
+            {
+                numberSigns++;
+                char string[MAX_ELEMENTS];
+                GetWindowText((HWND)lParam, string, MAX_ELEMENTS);
+
+                if (!strcmp(strings[randomIndex], string) && !isEnd)
+                {
+                    KillTimer(hwnd, timerIdt);
+                    destroyGameWidgets();
+                    createResultWidgets();
+                    char resultString[MAX_ELEMENTS];
+                    createResultString(string, resultString);
+                    SendMessage(resultWindow.box, WM_SETTEXT, TRUE, (LPARAM)resultString);
+                    SendMessage(gameWindow.inputZone, EM_SETREADONLY, TRUE, 0);
+                    HideCaret(gameWindow.inputZone);
+                    isEnd = TRUE;
+                    return changeColor((HDC)wParam, 0, 255, 0);
+                }
+                else if (!checkString(strings[randomIndex], string))
+                {
+                    if (!errorZone)
+                    {
+                        mistakes++;
+                        errorZone = TRUE;
+                        SendMessage(gameWindow.errors, WM_SETTEXT, TRUE, (LPARAM)createErrorString());
+                    }
+                    return changeColor((HDC)wParam, 255, 0, 0);
+                }
+                else
+                {
+                    if (errorZone)
+                        errorZone = FALSE;
+                    return changeColor((HDC)wParam, 0, 0, 0);
+                }
+            }
+            break;
+        }
+        default:
+            return DefWindowProcA(hwnd, message, wParam, lParam);
     }
     return 0;
 }

@@ -59,9 +59,6 @@ $(OBJ_DIR)/$(TEST_DIR)/main.o: $(TEST_DIR)/main.c
 $(OBJ_DIR)/$(TEST_DIR)/ctest.o: $(TEST_DIR)/ctest.c
 	$(CC) $(CFLAGS) $(DEPSFLAGS) -I $(LIB_DIR) -I $(LIB_TEST_DIR) -c $< -o $@
 
-format: 
-	clang-format -i --verbose $(APP_SRC) $(LIB_SRC)
-
 -include $(LIB_DEPS) $(APP_DEPS) $(TEST_DEPS)
 
-.PHONY: all run clean test format
+.PHONY: all run clean test
