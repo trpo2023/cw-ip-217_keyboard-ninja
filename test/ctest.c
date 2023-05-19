@@ -65,3 +65,11 @@ CTEST(STRINGS, CHECK_SPEED_STRING)
     ASSERT_EQUAL(0, strcmp("430 ch/min", createSpeedString(430)));
     ASSERT_NOT_EQUAL(0, strcmp("32 ch/min", createSpeedString(320)));
 }
+
+// Проверка правильности сравнения двух строк во время печати
+CTEST(STRINGS, CHECK_STRING_EQUALITY)
+{
+    ASSERT_TRUE(checkString("First string", "First string"));
+    ASSERT_FALSE(checkString("Let's try it", "Lets try it"));
+    ASSERT_TRUE(checkString("Some interesting words about something", "Some interesting words about something"));
+}
