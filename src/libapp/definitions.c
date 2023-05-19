@@ -182,7 +182,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
         }
         case STATISTICS_BUTTON:
         {
-            MessageBox(hwnd, "Test\nAga", "Statistics", MB_DEFBUTTON1);
+            MessageBox(hwnd, createStatisticsString(), "Statistics", MB_DEFBUTTON1);
             break;
         }
         case MAIN_MENU_BUTTON:

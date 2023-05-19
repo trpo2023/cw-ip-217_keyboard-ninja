@@ -21,7 +21,7 @@ extern MainWindow mainWindow;
 extern GameWindow gameWindow;
 extern ResultWindow resultWindow;
 
-int putStrings();
+int insertPart(char *firstString, char *secondString, int j);
 char *createErrorString();
 char *createTimerString();
 char *createSpeedString(int speed);
