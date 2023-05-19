@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <string.h>
+#include <windows.h>
 
 #include <definitions.h>
 #include <interface.h>
@@ -11,7 +11,7 @@ HFONT createFont(int size)
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfHeight = size; // Размер шрифта
     logfont.lfWeight = 10;
-    strcpy(logfont.lfFaceName, "Tahoma"); 
+    strcpy(logfont.lfFaceName, "Tahoma");
     return CreateFontIndirect(&logfont);
 }
 

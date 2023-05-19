@@ -1,4 +1,5 @@
 #pragma once
 
 int putStrings();
-void saveResults(int speed, int percent);
+int saveResults(int speed, int percent);
+char *createStatisticsString();
