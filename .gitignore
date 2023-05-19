@@ -3,4 +3,4 @@ obj/src/app/*.*
 obj/src/libapp/*.*
 obj/test/*.*
 .vscode
-data/background.jpg
+data/data.txt

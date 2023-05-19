@@ -4,9 +4,9 @@
 #include <definitions.h>
 #include <parser.h>
 
-int putStrings()
+int putStrings(char *fileName)
 {
-    FILE *file = fopen("data/input.txt", "r");
+    FILE *file = fopen(fileName, "r");
     if (file == NULL)
     {
         printf("Error! Failed to open file!\n");
@@ -29,9 +29,9 @@ int putStrings()
     return count;
 }
 
-int saveResults(int speed, int percent)
+int saveResults(char *fileName, int speed, int percent)
 {
-    FILE *file = fopen("data/data.txt", "a");
+    FILE *file = fopen(fileName, "a");
     if (file == NULL)
     {
         printf("Error! Failed to open file!\n");
@@ -45,10 +45,10 @@ int saveResults(int speed, int percent)
     return 0;
 }
 
-char *createStatisticsString()
+char *createStatisticsString(char *fileName)
 {
     static char string[STANDARD_SIZE];
-    FILE *file = fopen("data/data.txt", "r");
+    FILE *file = fopen(fileName, "r");
     if (file == NULL)
     {
         fclose(file);
