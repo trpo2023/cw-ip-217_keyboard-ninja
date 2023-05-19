@@ -24,3 +24,9 @@ CTEST(INPUT_FILE, CHECK_AMOUNT_STRINGS)
 {
     ASSERT_EQUAL(10, putStrings("data/input.txt"));
 }
+
+// Проверка на то, что функция построения статистики прекращается из-за несуществования файла
+CTEST(DATA_FILE, CHECK_EMPTY_FILE)
+{
+    ASSERT_EQUAL(0, strcmp("No games have been played yet.", createStatisticsString("text/input/values.txt")));
+}
