@@ -58,3 +58,10 @@ CTEST(OUTPUT_FILE, CHECK_NEW_LINE)
 
     fclose(file);
 }
+
+// Проверка правильности построения строки скорости
+CTEST(STRINGS, CHECK_SPEED_STRING)
+{
+    ASSERT_EQUAL(0, strcmp("430 ch/min", createSpeedString(430)));
+    ASSERT_NOT_EQUAL(0, strcmp("32 ch/min", createSpeedString(320)));
+}
