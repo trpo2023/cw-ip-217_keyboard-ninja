@@ -84,7 +84,7 @@ void createResultString(char *text, char *string)
     j = insertPart(string, value, j);
     j = insertPart(string, "%)", j);
 
-    saveResults(speed, percent);
+    saveResults("data/data.txt", speed, percent);
 }
 
 BOOL checkString(char *original, char *string)
@@ -116,30 +116,9 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
 {
     switch (message)
     {
-        // case WM_SETCURSOR:
-        // {
-        //     LPPOINT cursor;
-        //     cursor = malloc(sizeof(*cursor));
-
-        //     GetCursorPos(cursor);
-        //     ScreenToClient(hwnd, cursor);
-
-        //     printf("%ld %ld\n", cursor[0].x, cursor[0].y);
-
-        //     if (isStart && ((cursor[0].x >= 150 && cursor[0].x <= 650) && (cursor[0].y >= 400 && cursor[0].y <= 500)))
-        //     {
-        //         printf("YEAH\n");
-        //         SetCursor(LoadCursor(NULL, IDC_HAND));
-        //     }
-        //     else
-        //     {
-        //         SetCursor(LoadCursor(NULL, IDC_ARROW));
-        //     }
-        //     break;
-        // }
         case WM_TIMER:
         {
-            if (sec > 59)
+            if (sec == 59)
             {
                 sec = 0;
                 min++;
@@ -182,7 +161,7 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
                 }
                 case STATISTICS_BUTTON:
                 {
-                    MessageBox(hwnd, createStatisticsString(), "Statistics", MB_DEFBUTTON1);
+                    MessageBox(hwnd, createStatisticsString("data/data.txt"), "Statistics", MB_DEFBUTTON1);
                     break;
                 }
                 case MAIN_MENU_BUTTON:
@@ -254,7 +233,6 @@ LRESULT WINAPI softwareMainProcedure(HWND hwnd, UINT message, WPARAM wParam, LPA
                     return changeColor((HDC)wParam, 0, 0, 0);
                 }
             }
-            break;
         }
         default:
             return DefWindowProcA(hwnd, message, wParam, lParam);

@@ -1,4 +1,3 @@
-#include <locale.h>
 #include <windows.h>
 
 #include <definitions.h>
@@ -20,14 +19,13 @@ ResultWindow resultWindow;
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "Rus");
     WNDCLASSA NWC = newWindowClass((HBRUSH)(LTGRAY_BRUSH), LoadCursor(NULL, IDC_ARROW), "Window", softwareMainProcedure);
     RegisterClassA(&NWC);
 
     createWindow();
     ShowWindow(mainWindow.window, SW_SHOWNORMAL);
     UpdateWindow(mainWindow.window);
-    amount = putStrings();
+    amount = putStrings("data/input.txt");
     createMainWidgets();
 
     MSG message;
