@@ -1,10 +1,9 @@
 #include <ctest.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include <parser.h>
 #include <definitions.h>
-#include <interface.h>
+#include <parser.h>
 
 UINT_PTR timerIdt;
 
@@ -57,6 +56,7 @@ CTEST(OUTPUT_FILE, CHECK_NEW_LINE)
     }
 
     fclose(file);
+    remove("test/input/values.txt");
 }
 
 // Проверка правильности построения строки скорости
