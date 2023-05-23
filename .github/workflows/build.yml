@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check codestyle
-        run: clang-format src/app/app.c src/libapp/definitions.c src/libapp/definitions.h src/libapp/interface.c src/libapp/interface.h src/libapp/parser.c src/libapp/parser.h -i --verbose
+        run: $files=(git ls-files); foreach ($file in $files) { if ((get-item $file).Extension -in ".c", ".h") { &clang-format -i --verbose $file } }
         
       - name: Build application
         run: make

@@ -1,10 +1,10 @@
 #include <ctest.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include <parser.h>
 #include <definitions.h>
 #include <interface.h>
+#include <parser.h>
 
 UINT_PTR timerIdt;
 
