@@ -10,13 +10,13 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check codestyle
-        run: $files=(git ls-files src); foreach ($file in $files) { if ((get-item $file).Extension -in ".c", ".h") { &clang-format -i --verbose $file } }  
+        run: $files=(git ls-files src); foreach ($file in $files) { if ((get-item $file).Extension -in ".c", ".h") { &clang-format -i --verbose $file } }; git diff --exit-code
         
       - name: Build application
         run: make
 
       - name: Check tests codestyle
-        run: $files=(git ls-files test); foreach ($file in $files) { if ((get-item $file).Extension -in ".c", ".h") { &clang-format -i --verbose $file } }  
+        run: $files=(git ls-files test); foreach ($file in $files) { if ((get-item $file).Extension -in ".c", ".h") { &clang-format -i --verbose $file } }; git diff --exit-code
         
       - name: Build tests
         run: make test
