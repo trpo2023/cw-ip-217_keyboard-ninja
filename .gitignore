@@ -1,0 +1,6 @@
+bin
+obj/src/app/*.*
+obj/src/libapp/*.*
+obj/test/*.*
+.vscode
+data/data.txt
